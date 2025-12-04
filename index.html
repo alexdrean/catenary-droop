@@ -404,18 +404,18 @@
     // WLL = Breaking Strength / 5
     // Weights and larger sizes interpolated using d^2 relationship
     const cableSpecs = {
-        '3/32': { weight: 7.5, wll: 200 },      // 1000 lbs / 5
-        '1/8': { weight: 13.3, wll: 352 },      // 1760 lbs / 5
-        '3/16': { weight: 30, wll: 840 },       // 4200 lbs / 5
-        '1/4': { weight: 53.3, wll: 1400 },     // 7000 lbs / 5
-        '5/16': { weight: 83.3, wll: 1960 },    // 9800 lbs / 5
-        '3/8': { weight: 120, wll: 2880 },      // 14400 lbs / 5
-        '7/16': { weight: 163, wll: 3920 },     // 19600 lbs / 5 (interpolated)
-        '1/2': { weight: 213, wll: 5120 },      // 25600 lbs / 5 (interpolated)
-        '9/16': { weight: 270, wll: 6480 },     // 32400 lbs / 5 (interpolated)
-        '5/8': { weight: 333, wll: 8000 },      // 40000 lbs / 5 (interpolated)
-        '11/16': { weight: 403, wll: 9680 },    // 48400 lbs / 5 (interpolated)
-        '3/4': { weight: 480, wll: 11520 }      // 57600 lbs / 5 (interpolated)
+        '3/32': { weight: 16.5, wll: 200 },     // 1000 lbs / 5
+        '1/8': { weight: 29, wll: 400 },        // 2000 lbs / 5
+        '3/16': { weight: 65, wll: 840 },       // 4200 lbs / 5
+        '1/4': { weight: 110, wll: 1400 },      // 7000 lbs / 5
+        '5/16': { weight: 173, wll: 1960 },     // 9800 lbs / 5
+        '3/8': { weight: 243, wll: 2880 },      // 14400 lbs / 5
+        '7/16': { weight: 337, wll: 4288 },     // 21440 lbs / 5 (interpolated d^2)
+        '1/2': { weight: 440, wll: 5600 },      // 28000 lbs / 5 (interpolated d^2)
+        '9/16': { weight: 557, wll: 7088 },     // 35440 lbs / 5 (interpolated d^2)
+        '5/8': { weight: 688, wll: 8750 },      // 43750 lbs / 5 (interpolated d^2)
+        '11/16': { weight: 832, wll: 10588 },   // 52940 lbs / 5 (interpolated d^2)
+        '3/4': { weight: 990, wll: 12600 }      // 63000 lbs / 5 (interpolated d^2)
     };
 
     // Handle cable size selection
