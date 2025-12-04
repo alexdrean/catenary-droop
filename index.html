@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catenary Cable Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .panels {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .panel h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #444;
+        }
+
+        .input-group .hint {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-row input {
+            flex: 1;
+        }
+
+        .input-row .unit {
+            font-size: 13px;
+            color: #666;
+            min-width: 50px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .output-group {
+            margin-bottom: 16px;
+        }
+
+        .output-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .output-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .output-value.highlight {
+            color: #e74c3c;
+        }
+
+        .output-value .unit {
+            font-size: 16px;
+            font-weight: 400;
+            color: #888;
+        }
+
+        .chart-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .chart-panel h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 700px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .legend-color.cable {
+            background: #3498db;
+        }
+
+        .legend-color.los {
+            background: #95a5a6;
+        }
+
+        .legend-color.marker {
+            background: #e74c3c;
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Catenary Cable Calculator</h1>
+    <p class="subtitle">Calculate sag and droop for suspended cables</p>
+
+    <div class="panels">
+        <div class="panel">
+            <h2>Cable Parameters</h2>
+
+            <div class="input-group">
+                <label>Total Horizontal Distance</label>
+                <div class="input-row">
+                    <input type="number" id="totalDistance" value="1000" step="1">
+                    <span class="unit">ft</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Elevation Gain (endpoint B relative to A)</label>
+                <div class="input-row">
+                    <input type="number" id="elevationGain" value="200" step="1">
+                    <span class="unit">ft</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Cable Weight</label>
+                <div class="input-row">
+                    <input type="number" id="cableWeight" value="29" step="0.1">
+                    <span class="unit">lb/1000ft</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Horizontal Tension</label>
+                <div class="hint">Constant horizontal component of cable tension</div>
+                <div class="input-row">
+                    <input type="number" id="tension" value="340" step="1">
+                    <span class="unit">lbf</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Measurement Distance from A</label>
+                <div class="input-row">
+                    <input type="number" id="measureDistance" value="190" step="1">
+                    <span class="unit">ft</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Results at Measurement Point</h2>
+
+            <div class="output-group">
+                <label>Cable Height (absolute)</label>
+                <div class="output-value">
+                    <span id="absoluteHeight">—</span>
+                    <span class="unit">ft</span>
+                </div>
+            </div>
+
+            <div class="output-group">
+                <label>Line of Sight Height</label>
+                <div class="output-value">
+                    <span id="losHeight">—</span>
+                    <span class="unit">ft</span>
+                </div>
+            </div>
+
+            <div class="output-group">
+                <label>Droop (below line of sight)</label>
+                <div class="output-value highlight">
+                    <span id="droop">—</span>
+                    <span class="unit">ft</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-panel">
+        <h2>Cable Profile</h2>
+        <div class="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color cable"></div>
+                <span>Cable (Catenary)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color los"></div>
+                <span>Line of Sight</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color marker"></div>
+                <span>Measurement Point</span>
+            </div>
+        </div>
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-value" id="tensionA">—</div>
+                <div class="stat-label">Tension @ A (lbf)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="tensionB">—</div>
+                <div class="stat-label">Tension @ B (lbf)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="cableLength">—</div>
+                <div class="stat-label">Cable Length (ft)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="maxDroop">—</div>
+                <div class="stat-label">Max Droop (ft)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let chart = null;
+
+    // Solve for catenary parameters x0 and c given endpoints and catenary parameter a
+    function solveCatenary(xA, yA, xB, yB, a) {
+        // Newton-Raphson iteration to find x0
+        // From: a*cosh((xA-x0)/a) + c = yA and a*cosh((xB-x0)/a) + c = yB
+        // Subtracting: a*cosh((xB-x0)/a) - a*cosh((xA-x0)/a) = yB - yA
+
+        let x0 = (xA + xB) / 2 - 500; // Initial guess
+        const deltaY = yB - yA;
+
+        for (let i = 0; i < 100; i++) {
+            const f = a * Math.cosh((xB - x0) / a) - a * Math.cosh((xA - x0) / a) - deltaY;
+            const df = Math.sinh((xA - x0) / a) - Math.sinh((xB - x0) / a);
+
+            const dx = f / df;
+            x0 -= dx;
+
+            if (Math.abs(dx) < 1e-10) break;
+        }
+
+        const c = yA - a * Math.cosh((xA - x0) / a);
+
+        return { x0, c };
+    }
+
+    function calculate() {
+        // Get inputs
+        const totalDistance = parseFloat(document.getElementById('totalDistance').value) || 1000;
+        const elevationGain = parseFloat(document.getElementById('elevationGain').value) || 0;
+        const cableWeightPer1000 = parseFloat(document.getElementById('cableWeight').value) || 29;
+        const H = parseFloat(document.getElementById('tension').value) || 340;
+        const measureDist = parseFloat(document.getElementById('measureDistance').value) || 190;
+
+        // Cable parameters
+        const w = cableWeightPer1000 / 1000; // lb/ft
+        const a = H / w; // catenary parameter
+
+        // Endpoints
+        const xA = 0, yA = 0;
+        const xB = totalDistance, yB = elevationGain;
+
+        // Solve for catenary
+        const { x0, c } = solveCatenary(xA, yA, xB, yB, a);
+
+        // Catenary function
+        const catenary = (x) => a * Math.cosh((x - x0) / a) + c;
+
+        // Line of sight
+        const lineOfSight = (x) => (yB - yA) / (xB - xA) * x + yA;
+
+        // Calculate at measurement point
+        const yCable = catenary(measureDist);
+        const yLOS = lineOfSight(measureDist);
+        const droop = yLOS - yCable;
+
+        // Tensions at endpoints
+        const tensionAt = (x) => {
+            const V = H * Math.sinh((x - x0) / a);
+            return Math.sqrt(H * H + V * V);
+        };
+
+        const tensionA = tensionAt(xA);
+        const tensionB = tensionAt(xB);
+
+        // Cable length
+        const cableLength = a * (Math.sinh((xB - x0) / a) - Math.sinh((xA - x0) / a));
+
+        // Find maximum droop
+        let maxDroop = 0;
+        for (let x = 0; x <= totalDistance; x += totalDistance / 100) {
+            const d = lineOfSight(x) - catenary(x);
+            if (d > maxDroop) maxDroop = d;
+        }
+
+        // Update outputs
+        document.getElementById('absoluteHeight').textContent = yCable.toFixed(2);
+        document.getElementById('losHeight').textContent = yLOS.toFixed(2);
+        document.getElementById('droop').textContent = droop.toFixed(2);
+        document.getElementById('tensionA').textContent = tensionA.toFixed(1);
+        document.getElementById('tensionB').textContent = tensionB.toFixed(1);
+        document.getElementById('cableLength').textContent = cableLength.toFixed(1);
+        document.getElementById('maxDroop').textContent = maxDroop.toFixed(2);
+
+        // Generate chart data
+        const numPoints = 100;
+        const cableData = [];
+        const losData = [];
+
+        for (let i = 0; i <= numPoints; i++) {
+            const x = (i / numPoints) * totalDistance;
+            cableData.push({ x: x, y: catenary(x) });
+            losData.push({ x: x, y: lineOfSight(x) });
+        }
+
+        // Measurement point
+        const measurePoint = [{ x: measureDist, y: yCable }];
+
+        // Update chart
+        updateChart(cableData, losData, measurePoint, totalDistance, elevationGain);
+    }
+
+    function updateChart(cableData, losData, measurePoint, maxX, elevationGain) {
+        const ctx = document.getElementById('chart').getContext('2d');
+
+        if (chart) {
+            chart.destroy();
+        }
+
+        // Calculate y range for proper scaling
+        const allY = [...cableData.map(p => p.y), ...losData.map(p => p.y)];
+        const minY = Math.min(...allY);
+        const maxY = Math.max(...allY);
+        const yPadding = (maxY - minY) * 0.1;
+
+        chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Cable (Catenary)',
+                        data: cableData,
+                        borderColor: '#3498db',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2.5,
+                        showLine: true,
+                        pointRadius: 0,
+                        tension: 0.4,
+                        order: 2
+                    },
+                    {
+                        label: 'Line of Sight',
+                        data: losData,
+                        borderColor: '#95a5a6',
+                        backgroundColor: 'transparent',
+                        borderWidth: 1.5,
+                        borderDash: [8, 4],
+                        showLine: true,
+                        pointRadius: 0,
+                        order: 3
+                    },
+                    {
+                        label: 'Measurement Point',
+                        data: measurePoint,
+                        borderColor: '#e74c3c',
+                        backgroundColor: '#e74c3c',
+                        pointRadius: 7,
+                        pointStyle: 'circle',
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'nearest'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `x: ${context.parsed.x.toFixed(1)} ft, y: ${context.parsed.y.toFixed(2)} ft`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        min: 0,
+                        max: maxX,
+                        title: {
+                            display: true,
+                            text: 'Horizontal Distance (ft)',
+                            font: { size: 12 }
+                        },
+                        grid: {
+                            color: '#eee'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        min: minY - yPadding,
+                        max: maxY + yPadding,
+                        title: {
+                            display: true,
+                            text: 'Height (ft)',
+                            font: { size: 12 }
+                        },
+                        grid: {
+                            color: '#eee'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Attach event listeners
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', calculate);
+    });
+
+    // Initial calculation
+    calculate();
+</script>
+</body>
+</html>
